@@ -34,9 +34,9 @@ class PostController extends Controller
         return redirect()->route('dashboard');
     }
 
-    public function destroy(Request $request, Post $post)
+    public function destroy(Post $post)
     {
-        $this->authorize('destroy', $post);
+        $this->authorize('update', $post);
 
         //the same like code above
         //if ($request->user()->cannot('destroy', $post))
@@ -50,5 +50,16 @@ class PostController extends Controller
             Session::flash('error', 'There was an error');
         }
         return redirect()->back();
+    }
+
+    public function update(Request $request, Post $post)
+    {
+        $this->authorize('update', $post);
+        $this->validate($request, [
+            'body' => 'required|max:240'
+        ]);
+        $post->body = $request->body;
+        $post->save();
+        return response()->json(['body' => $post->body], 200);
     }
 }

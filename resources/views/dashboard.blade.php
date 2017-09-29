@@ -23,7 +23,7 @@
         @foreach($posts as $post)
         <div class="row">
             <div class="col-md-6 col-md-offset-3">
-                <article class="post panel panel-default">
+                <article class="post panel panel-default" data-post-id="{{ $post->id }}">
                     <div class="panel-body">
                         <div class="media">
                             <div class="media-left">
@@ -33,7 +33,7 @@
                             </div>
                             <div class="media-body">
                                 <h4 class="media-heading">{{ $post->user->name }}</h4>
-                                {{ $post->body }}
+                                <p class="post-body">{{ $post->body }}</p>
                             </div>
                         </div>
                     </div>
@@ -41,8 +41,10 @@
                         <div class="actions btn-group pull-left">
                             <a href="#" class="btn btn-primary btn-sm">Like</a>
                             <a href="#" class="btn btn-info btn-sm">Dislike</a>
-                            <a href="#" class="btn btn-warning btn-sm">Edit</a>
-                            <a href="{{ route('post.destroy', $post->id) }}" class="btn btn-danger btn-sm">Delete</a>
+                            @can('update', $post)
+                                <button type="button" class="btn post-edit btn-warning btn-sm">Edit</button>
+                                <a href="{{ route('post.destroy', $post->id) }}" class="btn btn-danger btn-sm">Delete</a>
+                            @endcan
                         </div>
                         <div class="pull-right date">
                             <p class="date">Posted {{ $post->created_at->diffForHumans() }}</p>
@@ -53,4 +55,58 @@
         </div>
         @endforeach
     </section>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="modal-edit">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                    <form action="" method="post">
+                        <div class="form-group">
+                            <label for="body">Edit the post</label>
+                            <textarea class="form-control" name="body" id="post-body" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" id="post-update" class="btn btn-primary">Save changes</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+@endsection
+
+@section('scripts')
+    <script>
+        var token = '{{ Session::token() }}';
+        var url = '{{ route('post.update', 0) }}';
+        var postId = 0;
+        var postBodyElement = null;
+
+        $('.post-edit').on('click', function(e) {
+            e.preventDefault();
+            postBodyElement = event.target.parentNode.parentNode.parentNode.getElementsByClassName('post-body')[0];
+            var body = postBodyElement.textContent;
+            postId = event.target.parentNode.parentNode.parentNode.dataset.postId;
+            url = url.slice(0, -1) + postId;
+            $('#post-body').val(body);
+            $('#modal-edit').modal();
+            console.log(url);
+        })
+
+        $('#post-update').on('click', function() {
+            $.ajax({
+                method: 'PUT',
+                url: url,
+                data: { body: $('#post-body').val(), postId: postId, _token: token }
+            }).done(function(msg) {
+                $(postBodyElement).text(msg.body);
+                $('#modal-edit').modal('hide');
+            });
+        });
+    </script>
 @endsection
