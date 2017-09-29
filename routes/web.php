@@ -17,4 +17,5 @@ Route::get('/profile', 'ProfileController@getIndex')
     ->name('profile.index');
 Route::post('/profile', 'ProfileController@update')
     ->name('profile.update');
-Route::get('/image/{filename}', 'ProfileController@getUserImage')->name('profile.image');
+Route::get('/image/{filename}', 'ProfileController@getUserImage')
+    ->name('profile.image');
