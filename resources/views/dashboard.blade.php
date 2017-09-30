@@ -38,11 +38,11 @@
                     </div>
                     <div class="panel-footer clearfix">
                         <div class="actions btn-group pull-left">
-                            <button class="btn btn-primary btn-sm like{{ Auth::user()->likes()->where('post_id', $post->id)->first() ? Auth::user()->likes()->where('post_id', $post->id)->first()->isLiked == 1 ? ' active' : '' : ''}}" data-is-like="true">Like</button>
-                            <button class="btn btn-info btn-sm like{{ Auth::user()->likes()->where('post_id', $post->id)->first() ? Auth::user()->likes()->where('post_id', $post->id)->first()->isLiked == 0 ? ' active' : '' : ''}}" data-is-like="false">Dislike</button>
+                            <button class="btn btn-primary like{{ Auth::user()->likes()->where('post_id', $post->id)->first() ? Auth::user()->likes()->where('post_id', $post->id)->first()->isLiked == 1 ? ' active' : '' : ''}}" data-is-like="true">Like</button>
+                            <button class="btn btn-info like{{ Auth::user()->likes()->where('post_id', $post->id)->first() ? Auth::user()->likes()->where('post_id', $post->id)->first()->isLiked == 0 ? ' active' : '' : ''}}" data-is-like="false">Dislike</button>
                             @can('update', $post)
-                                <button type="button" class="btn post-edit btn-warning btn-sm">Edit</button>
-                                <a href="{{ route('post.destroy', $post->id) }}" class="btn btn-danger btn-sm">Delete</a>
+                                <button type="button" class="btn post-edit btn-warning">Edit</button>
+                                <a href="{{ route('post.destroy', $post->id) }}" class="btn btn-danger">Delete</a>
                             @endcan
                         </div>
                         <div class="pull-right date">
@@ -89,9 +89,10 @@
 
         $('.post-edit').on('click', function(e) {
             e.preventDefault();
-            postBodyElement = e.target.parentNode.parentNode.parentNode.getElementsByClassName('post-body')[0];
+            el = $(this);
+            postBodyElement = el.parentNode.parentNode.parentNode.getElementsByClassName('post-body')[0];
             var body = postBodyElement.innerText;
-            postId = e.target.parentNode.parentNode.parentNode.dataset.postId;
+            postId = el.parentNode.parentNode.parentNode.dataset.postId;
             urlUpdate = urlUpdate.slice(0, -1) + postId;
             $('#post-body').val(body);
             $('#modal-edit').modal();
@@ -112,13 +113,14 @@
             el = $(this);
             el.blur();
             var isLike = el.data('isLike');
-            postId = e.target.parentNode.parentNode.parentNode.dataset.postId;
+            postId = el.parentNode.parentNode.parentNode.dataset.postId;
             $.ajax({
                 method: 'POST',
                 url: urlLike,
                 data: {isLike: isLike, postId: postId, _token: token}
             }).done(function(msg) {
                 el.toggleClass('active');
+                console.log(el.find('badge'));
                 if(isLike) {
                     if (el.next().hasClass('active')) {
                         el.next().removeClass('active');
