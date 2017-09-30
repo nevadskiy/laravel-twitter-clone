@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Post;
 use Session;
+use App\Like;
 
 class PostController extends Controller
 {
@@ -16,6 +17,11 @@ class PostController extends Controller
     public function getIndex()
     {
         $posts = Post::latest()->get();
+//        $posts = Post::latest()->with([
+//            'likes' => function($query) {
+//                return $like->whereHas('user')
+//            }
+//        ])->get();
         return view('dashboard')->withPosts($posts);
     }
 
@@ -61,5 +67,30 @@ class PostController extends Controller
         $post->body = $request->body;
         $post->save();
         return response()->json(['body' => $post->body], 200);
+    }
+
+    public function postLike(Request $request)
+    {
+        $postId = $request->postId;
+        $post = Post::findOrFail($postId);
+        $isLike = $request->isLike === 'true';
+        $user = $request->user();
+
+        $like = $post->likes()->where('user_id', $user->id)->first();
+
+        if ($like) {
+            $isLiked = $like->isLiked;
+            if ($isLike == $isLiked) {
+                $like->delete();
+                return null;
+            }
+        } else {
+            $like = new Like;
+        }
+        $like->isLiked = $isLike;
+        $like->user_id = $user->id;
+        $like->post_id = $post->id;
+        $like->save();
+        return null;
     }
 }

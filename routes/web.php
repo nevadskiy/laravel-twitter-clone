@@ -1,4 +1,6 @@
 <?php
+DB::enableQueryLog();
+
 /** Auth */
 Auth::routes();
 
@@ -11,6 +13,8 @@ Route::get('/post/{post}/delete', 'PostController@destroy')
     ->name('post.destroy');
 Route::put('/post/{post}', 'PostController@update')
     ->name('post.update');
+Route::post('post/like', 'PostController@postLike')
+    ->name('post.like');
 
 /** Profile */
 Route::get('/profile', 'ProfileController@getIndex')

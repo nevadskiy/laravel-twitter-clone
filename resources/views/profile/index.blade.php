@@ -27,7 +27,7 @@
         <section>
             <div class="row">
                 <div class="col-md-6 col-md-offset-3">
-                    <img src="{{ route('profile.image', ['filename' => $user->name . '-' . $user->id . '.jpg']) }}" alt="">
+                    <img class="img-responsive" src="{{ route('profile.image', ['filename' => $user->name . '-' . $user->id . '.jpg']) }}" alt="">
                 </div>
             </div>
         </section>

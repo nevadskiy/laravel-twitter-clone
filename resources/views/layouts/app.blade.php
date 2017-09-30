@@ -72,9 +72,13 @@
                 </div>
             </div>
         </nav>
-        @include('layouts.parts.message')
-        @yield('content')
+        <div class="container">
+            @include('layouts.parts.message')
+            @yield('content')
+        </div>
     </div>
+
+    {{ dump(DB::getQueryLog()) }}
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}"></script>

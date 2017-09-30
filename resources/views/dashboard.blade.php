@@ -15,7 +15,6 @@
                     <button class="btn btn-primary btn-block">Post</button>
                 </form>
             </div>
-            </div>
         </div>
     </section>
     <section class="posts">
@@ -39,8 +38,8 @@
                     </div>
                     <div class="panel-footer clearfix">
                         <div class="actions btn-group pull-left">
-                            <a href="#" class="btn btn-primary btn-sm">Like</a>
-                            <a href="#" class="btn btn-info btn-sm">Dislike</a>
+                            <button class="btn btn-primary btn-sm like{{ Auth::user()->likes()->where('post_id', $post->id)->first() ? Auth::user()->likes()->where('post_id', $post->id)->first()->isLiked == 1 ? ' active' : '' : ''}}" data-is-like="true">Like</button>
+                            <button class="btn btn-info btn-sm like{{ Auth::user()->likes()->where('post_id', $post->id)->first() ? Auth::user()->likes()->where('post_id', $post->id)->first()->isLiked == 0 ? ' active' : '' : ''}}" data-is-like="false">Dislike</button>
                             @can('update', $post)
                                 <button type="button" class="btn post-edit btn-warning btn-sm">Edit</button>
                                 <a href="{{ route('post.destroy', $post->id) }}" class="btn btn-danger btn-sm">Delete</a>
@@ -83,29 +82,52 @@
 @section('scripts')
     <script>
         var token = '{{ Session::token() }}';
-        var url = '{{ route('post.update', 0) }}';
+        var urlUpdate = '{{ route('post.update', 0) }}';
+        var urlLike = '{{ route('post.like') }}';
         var postId = 0;
         var postBodyElement = null;
 
         $('.post-edit').on('click', function(e) {
             e.preventDefault();
-            postBodyElement = event.target.parentNode.parentNode.parentNode.getElementsByClassName('post-body')[0];
-            var body = postBodyElement.textContent;
-            postId = event.target.parentNode.parentNode.parentNode.dataset.postId;
-            url = url.slice(0, -1) + postId;
+            postBodyElement = e.target.parentNode.parentNode.parentNode.getElementsByClassName('post-body')[0];
+            var body = postBodyElement.innerText;
+            postId = e.target.parentNode.parentNode.parentNode.dataset.postId;
+            urlUpdate = urlUpdate.slice(0, -1) + postId;
             $('#post-body').val(body);
             $('#modal-edit').modal();
-            console.log(url);
-        })
+        });
 
         $('#post-update').on('click', function() {
             $.ajax({
                 method: 'PUT',
-                url: url,
+                url: urlUpdate,
                 data: { body: $('#post-body').val(), postId: postId, _token: token }
             }).done(function(msg) {
                 $(postBodyElement).text(msg.body);
                 $('#modal-edit').modal('hide');
+            });
+        });
+        $('.like').on('click', function(e) {
+            e.preventDefault();
+            el = $(this);
+            el.blur();
+            var isLike = el.data('isLike');
+            postId = e.target.parentNode.parentNode.parentNode.dataset.postId;
+            $.ajax({
+                method: 'POST',
+                url: urlLike,
+                data: {isLike: isLike, postId: postId, _token: token}
+            }).done(function(msg) {
+                el.toggleClass('active');
+                if(isLike) {
+                    if (el.next().hasClass('active')) {
+                        el.next().removeClass('active');
+                    }
+                } else {
+                    if (el.prev().hasClass('active')) {
+                        el.prev().removeClass('active');
+                    }
+                }
             });
         });
     </script>
